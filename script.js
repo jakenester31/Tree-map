@@ -1,11 +1,10 @@
-
 //Test script
 addEventListener('resize',resized);
 function resized (){
   console.log("I have been resized");
 }
 
-// converts to time to milliseconds
+// converts time to milliseconds
 // Ex. 1d is 1 day or 86400000 milliseconds
 function time(time) {
   let x = [1000,60,60,24,365]; //unit conversion
@@ -18,22 +17,26 @@ function time(time) {
 }
 
 
+const searchParams = new URL(window.location.href).searchParams;
 
+const entries = new URLSearchParams(searchParams).entries();
 
+const url = Array.from(entries);
 
-
-
-
-
-
-
+function ar2ob(x){
+  let result = {};
+  for (var i = 0; i < x.length; i++) {
+    result[x[i][0]] = x[i][1];
+  }
+  return(result);
+}
 
 
 
 
 // Even this site has cookies, ALL SITES HAVE COOKIES! MUAHAHAHA
 // suprisingly its not even that late while writing this, just 12:24 am on a monday... T^T
-// Btw this is not my code... I have no idea how it works but it does so im not going to question it
+// Btw this is not my code... I have no idea how it works but it does, so im not going to question it
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();
     d.setTime(d.getTime() + (time(exdays))); //time() is my code! its to make setting the expiration date easier 
