@@ -52,8 +52,8 @@ onwheel = (event) => {
     let oldscale = Workspace.scale;
     event.deltaY < 0 && (Workspace.scale -= Workspace.scale / 10);
     event.deltaY > 0 && (Workspace.scale += Workspace.scale / 10);
-    Workspace.x += mouse.gx * (Workspace.scale - oldscale);
-    Workspace.y += mouse.gy * (Workspace.scale - oldscale);
+    // Workspace.x += mouse.gx * (Workspace.scale - oldscale);
+    // Workspace.y += mouse.gy * (Workspace.scale - oldscale);
     mouse.gx= mouse.x * Workspace.scale;
     mouse.gy= mouse.y * Workspace.scale;
     resize();
