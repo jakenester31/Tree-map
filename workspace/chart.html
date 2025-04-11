@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree map</title>
+    <link href="../main/style.css" rel="stylesheet">
+    <link href="chart.css" rel="stylesheet">
+</head>
+<body>
+    <div id="head">
+        <!-- On the left -->
+        <div>
+            <button onclick="location.href='../index.html'">
+                <h1>Tree Map</h1>
+            </button>
+        </div>
+        <!-- On the right -->
+        <div>
+            <button onclick="location.href='../index.html'">
+                <h1>Saves</h1>
+            </button>
+            <button onclick="location.href= 'index.html?cid=1'">
+                <h1>Settings</h1>
+            </button>
+        </div>
+    </div>
+    <div id="sidebar">
+    </div>
+    <div id="w_container"><canvas id="workspace"></canvas></div>
+    <div id="sbh"></div>
+
+    <script type="text/javascript" src="../main/script.js"></script>
+    <script type="text/javascript" src="chart.js"></script>
+    <script type="text/javascript" src="workspace.js"></script>
+</body>
+</html>
