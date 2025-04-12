@@ -23,17 +23,14 @@ workspace.addEventListener('mousemove',(event) => {
         event.clientY - document.getElementById('head').clientHeight
     ]);
     // TEST SCRIPT, [DELETE ME]
-    document.getElementById("sidebar").innerHTML= mp.join("<br>") + 
-    "<br>" + '/' + document.getElementById("sidebar").clientHeight + '/' + "<br>" + 
-    JSON.stringify(Workspace) + "<br>" +
-    Workspace.scale;
-
-    mouse = {ox:mp[0][0],oy:mp[0][1],x:mp[1][0],y:mp[1][1],gx:mouse.x * Workspace.scale,gy:mouse.y * Workspace.scale};
+    mouse.gx= mouse.x * Workspace.scale - Workspace.x;
+    mouse.gy= mouse.y * Workspace.scale - Workspace.y;
+    mouse = {ox:mp[0][0],oy:mp[0][1],x:mp[1][0],y:mp[1][1],gx:mouse.gx,gy:mouse.gy};
 
     // Reposition workspace
     if (Workspace.md == 1){
-        Workspace.x += (mouse.x - mouse.ox);
-        Workspace.y += (mouse.y - mouse.oy);
+        Workspace.x += (mouse.x - mouse.ox) * Workspace.scale;
+        Workspace.y += (mouse.y - mouse.oy) * Workspace.scale;
     }
 });
 
@@ -52,10 +49,8 @@ onwheel = (event) => {
     let oldscale = Workspace.scale;
     event.deltaY < 0 && (Workspace.scale -= Workspace.scale / 10);
     event.deltaY > 0 && (Workspace.scale += Workspace.scale / 10);
-    Workspace.x += mouse.gx;
-    Workspace.y += mouse.gy;
-    mouse.gx= mouse.x * Workspace.scale;
-    mouse.gy= mouse.y * Workspace.scale;
+    Workspace.x += mouse.x * (Workspace.scale - oldscale);
+    Workspace.y += mouse.y * (Workspace.scale - oldscale);
     resize();
 };
 
@@ -64,13 +59,18 @@ onwheel = (event) => {
 function draw () {
     context.clearRect(0,0,workspace.width,workspace.height);
     context.fillRect(Workspace.x,Workspace.y,100,100);
-    context.fillRect(mouse.gx,mouse.gy,10,10);
+    // 0,0 to mouse
     context.beginPath();
         context.moveTo(...goto(0,0));
-        context.lineTo(mouse.x, mouse.y);
+        context.lineTo(mouse.x * Workspace.scale, mouse.y * Workspace.scale);
+    context.stroke();
+    // 0,0 to 200,100
+    context.beginPath();
+        context.moveTo(...goto(0,0));
+        context.lineTo(200 + Workspace.x,100 + Workspace.y);
     context.stroke();
 }
 
 function goto(x,y){
-    return([Workspace.x + x * Workspace.scale, Workspace.y + y * Workspace.scale])
+    return([Workspace.x + x, Workspace.y + y])
 }
