@@ -9,8 +9,8 @@ var mouse = {gx:0,gy:0,down:0};
 var objects = [];
 
 // Fixes the aspect ratio
-new ResizeObserver(resize).observe(canvas);
-function resize() {
+new ResizeObserver(resizeCanvas).observe(canvas);
+function resizeCanvas() {
     canvas.height = canvas.clientHeight;
     canvas.width = canvas.height * (canvas.clientWidth / canvas.clientHeight);
     draw();
@@ -44,14 +44,16 @@ addEventListener('mouseup', (event) => {
 
 //Scrolling
 onwheel = (event) => {
-    let old = workspace.scale;
+    let old = workspace.scale; 
+    // Sets the sclae
     event.deltaY < 0 && (workspace.scale += workspace.scale / 10);
     event.deltaY > 0 && (workspace.scale -= workspace.scale / 10);
+    // Bounds the scale
     workspace.scale < 0.1 && (workspace.scale = 0.1);
     workspace.scale > 7 && (workspace.scale = 7);
+    // repositions the graph
     workspace.x -= mouse.gx * (workspace.scale - old);
     workspace.y -= mouse.gy * (workspace.scale - old);
-    resize();
 };
 
 
@@ -64,8 +66,12 @@ function goto(x,y){
     return([workspace.x + x * workspace.scale, workspace.y + y * workspace.scale])
 }
 
-function size(w,h){
-    return([w * workspace.scale, h * workspace.scale]);
+function size(...values){
+    let result = [];
+    for (var i = 0; i < values.length; i++){
+        result.push(values[i] * workspace.scale);
+    }
+    return(result);
 }
 
 // DIVORCE!!!!
@@ -103,8 +109,6 @@ function draw () {
     for (var i = 0; i < objects.length; i++){
         objects[i].draw();
     }
-    m.x2 = mouse.gx;
-    m.y2 = mouse.gy;
 }
 
 class circle {
@@ -165,4 +169,3 @@ let c1 = new circle(450,450,50,"black");
 let l1 = new line(200,0,0,200,"purple",5);
 let rectangle = new rect(0,0,100,100,"red");
 let txt1 = new text(0,300,"BALLER",100)
-let m = new line(0,0,0,0,"black");
