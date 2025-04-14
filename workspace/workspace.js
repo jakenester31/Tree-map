@@ -7,8 +7,9 @@ setInterval(draw,50);
 var workspace = {x:0,y:0,md:0,scale:1};
 var mouse = {gx:0,gy:0,down:0};
 var objects = [];
+var colliders = [];
 
-// Fixes the aspect ratio
+//Fixes the aspect ratio
 new ResizeObserver(resizeCanvas).observe(canvas);
 function resizeCanvas() {
     canvas.height = canvas.clientHeight;
@@ -16,17 +17,27 @@ function resizeCanvas() {
     draw();
 }
 
-// Mouse events:
+//Mouse events:
 
-// mouse moving over canvas
-canvas.addEventListener('mousemove',(event) => {
-    // Get mouse positions
+//mouse moving over canvas
+addEventListener('mousemove',(event) => {
+    // Get mouse positions:
     mp.splice(0,1); //removes the old item
     mp.push([ //adds new items
         event.clientX - document.getElementById('sidebar').clientWidth, //mouse x
         event.clientY - document.getElementById('head').clientHeight //mouse y
     ]);
-    if (mouse.down == 1){ // mouse down? move workspace
+    if (mouse.down == 1){ //mouse down?
+        if (canvas.matches(':not(:hover)')) {  //mouse not over canvas?
+            for (var x = 0; x < 2; x++){ //loop x
+                for (var y = 0; y < 2; y++){ //loop y
+                    mp[x][y] < 0 && (mp[x][y] = 0); //mouse off the top or left?
+                    y/0 == Infinity && mp[x][y] > canvas.clientHeight && (mp[x][y] = canvas.clientHeight); //mouse off the bottom
+                    y/0 != Infinity && mp[x][y] > canvas.clientWidth && (mp[x][y] = canvas.clientWidth); //mouse off the right
+                }
+            }
+        }
+        // set workspace position
         workspace.x += (mp[1][0] - mp[0][0]);
         workspace.y += (mp[1][1] - mp[0][1]);
     }
@@ -63,7 +74,7 @@ onwheel = (event) => {
 
 // converts graph position to canvas position
 function goto(x,y){
-    return([workspace.x + x * workspace.scale, workspace.y + y * workspace.scale])
+    return([workspace.x + size(x)[0], workspace.y + size(y)[0]])
 }
 
 function size(...values){
@@ -101,9 +112,9 @@ function divorce (x){
 
 // Draws the canvas
 function draw () {
-    document.getElementById('sidebar').innerHTML= divorce({mouse,workspace,objects}); // [DELETE ME] debug info
+    document.getElementById('sidebar').innerHTML= divorce(mp); // [DELETE ME] debug info
     // Reset canvas
-    context.lineWidth=3 * workspace.scale;
+    context.lineWidth=size(3);
     context.strokeStyle="black";
     context.clearRect(0,0,canvas.width,canvas.height); //Reset canvas
     for (var i = 0; i < objects.length; i++){
@@ -119,7 +130,7 @@ class circle {
     draw(){
         context.strokeStyle=this.color;
         context.beginPath();
-            context.arc(...goto(this.x,this.y),this.radius * workspace.scale,0,Math.PI * 2);
+            context.arc(...goto(this.x,this.y),size(this.radius),0,Math.PI * 2);
         context.closePath;
         context.stroke();
     }
@@ -132,8 +143,8 @@ class line {
     }
     draw(){
         context.strokeStyle=this.color;
-        context.lineWidth=this.width * workspace.scale;
-        context.beginPath();
+        context.lineWidth=size(this.width);
+            context.beginPath();
             context.moveTo(...goto(this.x,this.y));
             context.lineTo(...goto(this.x2, this.y2));
         context.closePath();
@@ -158,7 +169,7 @@ class text {
         objects.push(this);
     }
     draw(){
-        context.font= this.size * workspace.scale + "px Ariel";
+        context.font= size(this.size) + "px Ariel";
         context.fillText(this.text,...goto(this.x,this.y),this.maxWidth);
     }
 }
@@ -169,3 +180,4 @@ let c1 = new circle(450,450,50,"black");
 let l1 = new line(200,0,0,200,"purple",5);
 let rectangle = new rect(0,0,100,100,"red");
 let txt1 = new text(0,300,"BALLER",100)
+colliders.push(rectangle);
