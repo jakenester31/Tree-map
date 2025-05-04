@@ -27,6 +27,7 @@ contextMenu .menu {
     left:-1000px;
     min-width:max-content;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px, rgba(0, 0, 0, 0.35) 0px -50px 36px -28px inset;
+    z-index:99999;
 }
 
 contextMenu .menu.open{

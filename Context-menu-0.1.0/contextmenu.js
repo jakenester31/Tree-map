@@ -1,9 +1,5 @@
-/* incase you forgot:
- <script type="text/javascript" src="contextmenu.js"></script> 
- to link the file to your webpage
-*/
-
 // General
+document.querySelector('head').insertAdjacentHTML('beforeend','<link href="../Context-menu-0.1.0/contextmenu.css" rel="stylesheet">');
 const container = document.documentElement.appendChild(document.createElement('contextMenu'));
 const settings = {state:1,autoCloseChild:1,childClickSwitch:0};
 const allMenus = [];
@@ -13,34 +9,11 @@ var hover = 0;
 const ms = [0,0];
 var openChild;
 
+// Menus
 
-//Create menus
-// [DELETE Bellow] make your own!
-var t = 0;
-cmt('default menu');
 menuStart('all');
-addButton('Delete','console.log("test")','trash');
-addButton('parent',0,'add','add');
-addButton('undo',0,'sm');
-addButton('download',0,'sm');
-addButton('save',0,'add');
+addButton('Hello!');
 
-cmt('test menu');
-menuStart("img");
-addButton('M2',0,'add','add')
-addButton('M2',0,'trash');
-addButton('download',0,'sm');
-addButton('save',0,'add');
-
-menuStart('#add');
-addButton('save',0,'add');
-
-menuStart('?t == 1','?t == 3');
-addButton('T1',0,'add');
-
-menuStart('?t == 2');
-addButton('T2',0,'close');
-// While I thinks its obvious... stop deleting here [DELETE til me! and me]
 
 //functions
 
@@ -212,7 +185,7 @@ addEventListener('contextmenu', e => {
     }
 })
 
-addEventListener('click', e => {
+addEventListener('mousedown', e => {
     if (menu == undefined){
         console.log('click, no menu')
         return(0);
