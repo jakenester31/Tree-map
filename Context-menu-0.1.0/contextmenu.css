@@ -1,0 +1,86 @@
+.img {
+    width:200px;
+}
+
+
+/* Menu container */
+
+contextMenu {
+    position: absolute;
+    top:0px;
+    left:0px;
+}
+
+/* Menu */
+contextMenu .menu {
+    position:fixed;
+    flex-direction: column;
+    background:rgb(36, 36, 36);
+    border-radius: 10px 10px 10px 10px;
+    padding: 10px 0px;
+    user-select: none;
+    /* Display settings */
+    transition-property: opacity;
+    transition-duration: 0.25s;
+    display:flex;
+    opacity: 0;
+    left:-1000px;
+    min-width:max-content;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px, rgba(0, 0, 0, 0.35) 0px -50px 36px -28px inset;
+}
+
+contextMenu .menu.open{
+    opacity: 1;
+}
+
+/* Button */
+ .menu button { /* Button */
+    max-width: 200px;
+    background:none;
+    color:white;
+    border:none;
+    text-align: left;
+    padding: 8px 50px;
+    word-break: break-word;
+}
+
+contextMenu .menu button * { /* Inside button */
+    margin:0px;
+    float:left;
+}
+
+contextMenu .menu button:hover {  /* Hover */
+    background:rgb(60, 60, 60);
+}
+
+contextMenu .menu button:active {  /* click */
+    background:rgb(74, 74, 74);
+}
+
+/* Icons */
+contextMenu .parent::after{ /* Parent? */
+    font-family: Consolas, Menlo, monospace;
+    width:50px;
+    height:15px;
+    position: absolute;
+    right:0px;
+    /* Display */
+    content: "";
+    background:no-repeat;
+    background-size:20px;
+    background-position: 50% 50%;
+    background-image:url('menu-ico/right.png');
+}
+
+contextMenu .ico::before{ /* Icon setup */
+    width:50px;
+    height:15px;
+    position: absolute;
+    left:0px;
+    /* Display */
+    content:'';
+    background:no-repeat;
+    background-size:20px;
+    background-position: 50% 50%;
+    background-image:var(--icon);
+}
