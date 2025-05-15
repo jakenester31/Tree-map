@@ -1,4 +1,5 @@
 // General
+
 const canvas = document.querySelector('#workspace');
 const context = canvas.getContext("2d");
 const workspace = {x:0,y:0,scale:1,md:0};
@@ -64,10 +65,6 @@ canvas.addEventListener('mousedown', e =>{
         ];
         // reposition target
         if (target !== undefined){
-            // console.log(
-            //     (mousePos[1][0] - mousePos[0][0]) / workspace.scale,
-            //     (mousePos[1][1] - mousePos[0][1]) / workspace.scale
-            // );
             target.x += (mousePos[1][0] - mousePos[0][0]) / workspace.scale;
             target.y += (mousePos[1][1] - mousePos[0][1]) / workspace.scale;
             return(0);
@@ -76,6 +73,7 @@ canvas.addEventListener('mousedown', e =>{
         workspace.x += (mousePos[1][0] - mousePos[0][0]);
         workspace.y += (mousePos[1][1] - mousePos[0][1]);
     }
+
     const stop = function(){
         workspace.md = 0;
         target = undefined;
@@ -84,10 +82,19 @@ canvas.addEventListener('mousedown', e =>{
         removeEventListener('mouseup',stop);
     }
 
-    addEventListener('mousemove', move)
-    addEventListener('mouseup', stop)
-    workspace.md = 1;
     target = undefined;
+    hover = [];
+    for (var i = 0; i < objects.length; i++){
+        typeof objects[i]['checkHover'] !== 'undefined' && objects[i].checkHover();
+    }
+    if(hover.length >= 1) {
+        target = hover[hover.length - 1];
+        target.toFront();
+    }
+    
+    addEventListener('mousemove', move);
+    addEventListener('mouseup', stop);
+    workspace.md = 1;
 })
 
 canvas.addEventListener('wheel', e=>{
@@ -110,50 +117,34 @@ canvas.addEventListener('wheel', e=>{
     workspace.y -= mp.y * (workspace.scale - old);
 });
 
-
-function addCollider (obj) {
-    obj.collider = 1;
-}
-
-
 var arcAngle = [0,2];
+const dftSettings = {
+    lineWidth:3,
+    color:'skyblue'
+};
+
+const temp = {};
 
 // Classes
 new rect(-1,-1,1,1);
-new color('red');
-new rect(0,0,100,100).addCollider();
+temp.test = new rect(0,0,100,100).addCollider();
+temp.test.color = 'red';
+delete temp.test;
 new rect(100,100,100,100).addCollider();
-new lineWidth(7);
-new color('skyblue');
 new line(200,200,300,300);
 new line(310,310,330,330)
 new rect(300,200,1000,100);
-new color('purple');
-new lineWidth(3);
 new curve([200,0],[400,100]);
-new setArc(0.2,1.2);
-new arc(500,100,50);
+new arc(500,100,[50,90],'origin').color = 'red';
+new arc(500,100,[50,90],'origin').setArc(1.5);
 
 setInterval(draw, 20);
-var over = [];
+var hover = [];
 function draw(){
     // setup
-    context.lineWidth = size(3);
-    context.strokeStyle='black';
-    context.fillStyle = 'black';
     context.clearRect(0,0,canvas.width,canvas.height);
-
     //draw objects
-    over = [];
-
     for (var i = 0; i < objects.length; i++){
-        // target !== undefined && target === objects[i] && target.outline();
         objects[i].draw();
     }
-    if (target === undefined){
-        target = over[over.length - 1];
-    }
-    target !== undefined && target.outline();
-
-    document.querySelector('#sidebar').innerHTML=[workspace.md].join('<br>');
 }

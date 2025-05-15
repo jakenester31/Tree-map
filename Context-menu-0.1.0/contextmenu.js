@@ -1,3 +1,5 @@
+// To file scope everything
+(function foo(){
 // General
 document.querySelector('head').insertAdjacentHTML('beforeend','<link href="../Context-menu-0.1.0/contextmenu.css" rel="stylesheet">');
 const container = document.documentElement.appendChild(document.createElement('contextMenu'));
@@ -12,7 +14,7 @@ var openChild;
 // Menus
 
 menuStart('all');
-addButton('Hello!');
+addButton('Hello!','console.log("Hello!")');
 
 
 //functions
@@ -310,3 +312,4 @@ addEventListener('transitionend', e => {
         }
     }
 }
+})()
