@@ -1,9 +1,54 @@
-// Objects
+// Functions
+
+function group(name,...objs){
+    // var setup
+    groups[name] = objs;
+    let mnGroups = [];
+    let indexes = [];
+    let target;
+    let adding = [];
+
+    // setup new group
+    target = gId;
+    gId++;
+    allGroups[target] = [];
+
+    // Search for all related groups
+    for(let item of objs){
+        adding.push(item);
+        if(typeof item.mainGrp !== 'undefined'){
+            mnGroups.push(allGroups[item.mainGrp]);
+            indexes.push(item.mainGrp);
+        }
+    }
+
+    // Get related group members and delete old groups
+    for (var i = 0; i < mnGroups.length; i++){
+        for(var x = 0; x < mnGroups[i].length; x++){
+            adding.push(mnGroups[i][x]);
+        }
+        console.log(mnGroups[i]);
+        delete allGroups[indexes[i]];
+    }
+
+    // Add all members to new group
+    for(var i = 0; i < adding.length; i++){
+        if(allGroups[target].indexOf(adding[i]) > -1){
+            return(0);
+        }
+        allGroups[target].push(adding[i]);
+        adding[i].mainGrp = target;
+    }
+}
+
+// Base Objects
 class rect {
     constructor (x,y,width,height) {
         Object.assign(this,{x:x,y:y,width:width,height:height})
         this.hover = 0;
         this.color = dftSettings.color;
+        this.groups = [];
+        this.mainGrp = undefined;
         objects.push(this);
     }
     draw(){
@@ -11,15 +56,16 @@ class rect {
         context.fillRect(...goto(this.x,this.y),...size(this.width,this.height));
     }
     outline(){
-        context.lineWidth = size(5);
+        let sz = Math.min(this.width,this.height) / 20;
+        context.lineWidth = size(sz);
         context.strokeStyle='lime';
         context.beginPath();
-            context.moveTo(...goto(this.x,this.y));
-            context.lineTo(...goto(this.x + this.width, this.y));
-            context.lineTo(...goto(this.x + this.width, this.y + this.height));
-            context.lineTo(...goto(this.x, this.y + this.height));
-            context.lineTo(...goto(this.x, this.y));
-            // size(this.lineWidth) > 0 && context.stroke();
+            context.moveTo(...goto(this.x + sz / 2,this.y + sz / 2));
+            context.lineTo(...goto(this.x + this.width - sz / 2, this.y + sz / 2));
+            context.lineTo(...goto(this.x + this.width - sz / 2, this.y + this.height - sz / 2));
+            context.lineTo(...goto(this.x + sz / 2, this.y + this.height - sz / 2));
+            context.lineTo(...goto(this.x + sz / 2, this.y));
+            context.stroke();
         context.closePath();
     }
     addCollider (){
