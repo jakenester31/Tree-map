@@ -1,5 +1,4 @@
 // Functions
-
 function group(name,...objs){
     // var setup
     groups[name] = objs;
@@ -47,25 +46,23 @@ class rect {
         Object.assign(this,{x:x,y:y,width:width,height:height})
         this.hover = 0;
         this.color = dftSettings.color;
-        this.groups = [];
-        this.mainGrp = undefined;
         objects.push(this);
     }
     draw(){
         setColor(this);
-        context.fillRect(...goto(this.x,this.y),...size(this.width,this.height));
+        context.fillRect(this.x,this.y,this.width,this.height);
     }
     outline(){
-        let sz = Math.min(this.width,this.height) / 20;
-        context.lineWidth = size(sz);
+        let sz = Math.min(this.width,this.height) / 40;
+        context.lineWidth = sz * 2;
         context.strokeStyle='lime';
         context.beginPath();
-            context.moveTo(...goto(this.x + sz / 2,this.y + sz / 2));
-            context.lineTo(...goto(this.x + this.width - sz / 2, this.y + sz / 2));
-            context.lineTo(...goto(this.x + this.width - sz / 2, this.y + this.height - sz / 2));
-            context.lineTo(...goto(this.x + sz / 2, this.y + this.height - sz / 2));
-            context.lineTo(...goto(this.x + sz / 2, this.y));
-            context.stroke();
+            context.moveTo(this.x + sz,this.y + sz);
+            context.lineTo(this.x + this.width - sz, this.y + sz);
+            context.lineTo(this.x + this.width - sz, this.y + this.height - sz);
+            context.lineTo(this.x + sz, this.y + this.height - sz);
+            context.lineTo(this.x + sz, this.y);
+            context.lineWidth > 0 && context.stroke();
         context.closePath();
     }
     addCollider (){
@@ -82,10 +79,11 @@ class rect {
         }
 
         this.hover = 0;
-        if (!(gPos(mouse[0]).x > this.x && gPos(mouse[0]).x < this.x + this.width)){
+        if (!(gPos(mouse.x).x > this.x && gPos(mouse.x).x < this.x + this.width)){
+            console.log('bad x');
             return(0);
         }
-        if (gPos(mouse[1]).y > this.y && gPos(mouse[1]).y < this.y + this.height){
+        if (gPos(mouse.y).y > this.y && gPos(mouse.y).y < this.y + this.height){
             this.hover = 1;
             hover.push(this);
         }
@@ -101,11 +99,11 @@ class line {
     }
     draw(){
         setColor(this);
-        context.lineWidth = size(this.lineWidth);
+        context.lineWidth = this.lineWidth;
         context.beginPath();
-            context.moveTo(...goto(this.x,this.y));
-            context.lineTo(...goto(this.x2, this.y2));
-            size(this.lineWidth) > 0 && context.stroke();
+            context.moveTo(this.x,this.y);
+            context.lineTo(this.x2, this.y2);
+            this.lineWidth > 0 && context.stroke();
         context.closePath();
     }
 }
@@ -125,11 +123,11 @@ class curve {
     }
     draw(){
         setColor(this);
-        context.lineWidth = size(this.lineWidth);
+        context.lineWidth = this.lineWidth;
         context.beginPath();
-            context.moveTo(...goto(...this.point1));
-            context.bezierCurveTo(...goto(...this.controller1),...goto(...this.controller2),...goto(...this.point2));
-            size(this.lineWidth) > 0 && context.stroke();
+            context.moveTo(...this.point1);
+            context.bezierCurveTo(...this.controller1,...this.controller2,...this.point2);
+            this.lineWidth > 0 && context.stroke();
         context.closePath();
     }
 }
@@ -149,12 +147,12 @@ class arc {
     }
     draw(){
         setColor(this);
-        context.lineWidth = size(this.lineWidth);
+        context.lineWidth = this.lineWidth;
         context.beginPath();
-            context.ellipse(...goto(this.x,this.y),...size(...this.radius),0,Math.PI * -this.arcAngle[1], Math.PI * -this.arcAngle[0]);
-            size(this.lineWidth) > 0 && context.stroke();
+            context.ellipse(this.x,this.y,...this.radius,0,Math.PI * -this.arcAngle[1], Math.PI * -this.arcAngle[0]);
+            this.lineWidth > 0 && context.stroke();
             if (this.fill == 'origin' || this.fill == 'fill') {
-                this.fill == 'origin' && context.lineTo(...goto(this.x,this.y));
+                this.fill == 'origin' && context.lineTo(this.x,this.y);
                 context.fill();
             }
         context.closePath();

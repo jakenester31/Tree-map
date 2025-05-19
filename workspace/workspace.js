@@ -1,92 +1,32 @@
 // General
 const canvas = document.querySelector('#workspace');
 const context = canvas.getContext("2d");
-const workspace = {x:0,y:0,scale:1,md:0};
+const workspace = {x:0,y:0,scale:1};
+var mouse = {};
 const objects = [];
-var mouse = [0,0];
 var target;
 var tMembers;
-
-context.scale(3,30);
 
 new ResizeObserver(resizeCanvas).observe(canvas);
 function resizeCanvas() {
     canvas.height = canvas.clientHeight;
     canvas.width = canvas.height * (canvas.clientWidth / canvas.clientHeight);
+    canvasPos();
     draw();
 }
 
 // functions & event listeners
-
-function goto(x,y){
-    return([workspace.x + size(x), workspace.y + size(y)])
-}
-
-function size(...values){
-    let result = [];
-    for (var i = 0; i < values.length; i++){
-        result.push(values[i] * workspace.scale);
-    }
-    result.length == 1 && (result = result[0]);
-    return(result);
-}
-
-function gPos (input){
-    const results = {x:0,y:0}
-    results.x = ((input - workspace.x - canvas.parentNode.offsetLeft) / workspace.scale);
-    results.y = ((input - workspace.y - canvas.parentNode.offsetTop) / workspace.scale);
-    return(results);
-}
-
 canvas.addEventListener('mousedown', e =>{
     if (e.button !== 0){
         return(0);
     }
-    const mousePos = [];
-    while (mousePos.length < 2) {
-        mousePos.push([e.clientX - canvas.parentNode.offsetLeft,e.clientY - canvas.parentNode.offsetTop])
-    }
-    mouse = [
-        mousePos[1][0] + canvas.parentNode.offsetLeft,
-        mousePos[1][1] + canvas.parentNode.offsetTop
-    ];
-    const move = function (e){
-        // mousePos positions
-        mousePos.splice(0,1);
-        mousePos.push([e.clientX - canvas.parentNode.offsetLeft,e.clientY - canvas.parentNode.offsetTop])
-        // mousePos bounding
-        for (var i = 0; i < 2; i++){
-            mousePos[1][i] < 0 && (mousePos[1][i] = 0);
-        }
-        mousePos[1][0] > canvas.clientWidth && (mousePos[1][0] = mousePos[0][0]);
-        mousePos[1][1] > canvas.clientHeight && (mousePos[1][1] = mousePos[0][1]);
-        // Record mouse as global
-        mouse = [
-            mousePos[1][0] + canvas.parentNode.offsetLeft,
-            mousePos[1][1] + canvas.parentNode.offsetTop
-        ];
-        // reposition targets
-        if (target !== undefined){
-            for(var i = 0; i < tMembers.length; i++){
-                tMembers[i].x += (mousePos[1][0] - mousePos[0][0]) / workspace.scale;
-                tMembers[i].y += (mousePos[1][1] - mousePos[0][1]) / workspace.scale;
-            }
-            return(0);
-        }
-        // reposition workspace
-        workspace.x += (mousePos[1][0] - mousePos[0][0]);
-        workspace.y += (mousePos[1][1] - mousePos[0][1]);
-    }
-
-    const stop = function(){
-        workspace.md = 0;
-        target = undefined;
-        tMembers = undefined;
-        console.log('Killed');
-        removeEventListener('mousemove',move);
-        removeEventListener('mouseup',stop);
-    }
-
+    addEventListener('mousemove', move);
+    addEventListener('mouseup', stop);
+    // mouse position
+    let mp = [];
+    while (mp.length < 2) {mp.push(getMouse(e).ar);}
+    mouse = getMouse(e).pk;
+    // targets
     target = undefined;
     hover = [];
     for (var i = 0; i < objects.length; i++){
@@ -105,38 +45,82 @@ canvas.addEventListener('mousedown', e =>{
             tMembers[item].toFront();
             indexes[item] = Infinity;
         }
-
     }
-    
-    addEventListener('mousemove', move);
-    addEventListener('mouseup', stop);
-    workspace.md = 1;
+
+    function move(e) {
+        // mouse positions
+        mp.splice(0,1);
+        mp.push(getMouse(e).ar)
+        // mouse bounding
+        for (var i = 0; i < 2; i++){
+            const dim = canvas['client' + ['Width','Height'][i]];
+            mp[1][i] < 0 && (mp[1][i] = 0);
+            mp[1][i] > dim && (mp[1][i] = dim);
+        }
+        // Record mouse as global
+        mouse = {
+            x:mp[1][0],
+            y:mp[1][1]
+        };
+        // reposition target
+        if (target !== undefined){
+            for(var i = 0; i < tMembers.length; i++){
+                tMembers[i].x += (mp[1][0] - mp[0][0]) / workspace.scale;
+                tMembers[i].y += (mp[1][1] - mp[0][1]) / workspace.scale;
+            }
+            return(0);
+        }
+        // reposition workspace
+        workspace.x += mp[1][0] - mp[0][0];
+        workspace.y += mp[1][1] - mp[0][1];
+        canvasPos();
+    }
+
+    function stop() {
+        target = undefined;
+        tMembers = undefined;
+        mouse = {};
+        removeEventListener('mousemove',move);
+        removeEventListener('mouseup',stop);
+    }
 })
 
+canvas.addEventListener('wheel', e=>{
+    const dir = -e.deltaY / Math.abs(e.deltaY)
+    // old/new scales
+    const old = workspace.scale; 
+    workspace.scale += dir * workspace.scale / 10;
+    // bound scale
+    workspace.scale < 0.1 && (workspace.scale = 0.1);
+    workspace.scale > 7 && (workspace.scale = 7);
+    // reposition workspace
+    let pos = mouse.x === undefined ? getMouse(e).pk : {x:mouse.x,y:mouse.y};
+    workspace.x -= (pos.x - workspace.x) / old * (workspace.scale - old);
+    workspace.y -= (pos.y - workspace.y) / old * (workspace.scale - old);
+    canvasPos();
+});
 
 function getGroupMembers(obj){
     return(allGroups[obj.mainGrp] || [target]);
 }
 
-canvas.addEventListener('wheel', e=>{
-    const old = workspace.scale;
-    // which position?
-    let mp = {};
-    if (workspace.md == 1) {
-        mp = {x:gPos(mouse[0]).x,y:gPos(mouse[1]).y};
-    } else {
-        mp = {x:gPos(e.clientX).x,y:gPos(e.clientY).y};
-    }
-    // new scale
-    e.deltaY < 0 && (workspace.scale += workspace.scale / 10);
-    e.deltaY > 0 && (workspace.scale -= workspace.scale / 10);
-    // bound scale
-    workspace.scale < 0.1 && (workspace.scale = 0.1);
-    workspace.scale > 7 && (workspace.scale = 7);
-    // offset workspace
-    workspace.x -= mp.x * (workspace.scale - old);
-    workspace.y -= mp.y * (workspace.scale - old);
-});
+function canvasPos() {
+    context.resetTransform();
+    context.translate(workspace.x,workspace.y);
+    context.scale(workspace.scale,workspace.scale);
+}
+
+function getMouse(e){
+    const val = {x:e.clientX - canvas.parentNode.offsetLeft, y:e.clientY - canvas.parentNode.offsetTop};
+    return({ar:[val.x,val.y],pk:{x:val.x, y:val.y}})
+}
+
+function gPos (input){
+    const results = {x:0,y:0}
+    results.x = ((input - workspace.x) / workspace.scale);
+    results.y = ((input - workspace.y) / workspace.scale);
+    return(results);
+}
 
 var arcAngle = [0,2];
 const dftSettings = {
@@ -150,7 +134,6 @@ const allGroups = {};
 var gId = 0;
 
 // Classes
-new rect(-1,-1,1,1);
 temp.test = new rect(0,0,100,100).addCollider();
 temp.test.color = 'red';
 delete temp.test;
@@ -176,10 +159,10 @@ setInterval(draw, 20);
 var hover = [];
 function draw(){
     // setup
-    context.clearRect(0,0,canvas.width,canvas.height);
+    context.clearRect(-workspace.x / workspace.scale,-workspace.y / workspace.scale,canvas.clientWidth / workspace.scale,canvas.clientHeight / workspace.scale);
     //draw objects
-    for (const obj of objects){
-        obj.draw();
+    for (var i = 0; i < objects.length; i++){
+        objects[i].draw();
     }
     if (typeof target !== 'undefined') {
         for (var i = 0; i < tMembers.length; i++){
