@@ -2,10 +2,16 @@
 const canvas = document.querySelector('#workspace');
 const context = canvas.getContext("2d");
 const workspace = {x:0,y:0,scale:1};
+const settings = {
+    scrollIn:7,
+    scrollOut:0.1
+}
 var mouse = {};
 const objects = [];
-var target;
 var tMembers;
+const groups = {};
+const allGroups = {};
+var gId = 0;
 
 new ResizeObserver(resizeCanvas).observe(canvas);
 function resizeCanvas() {
@@ -27,23 +33,28 @@ canvas.addEventListener('mousedown', e =>{
     while (mp.length < 2) {mp.push(getMouse(e).ar);}
     mouse = getMouse(e).pk;
     // targets
-    target = undefined;
     hover = [];
     for (var i = 0; i < objects.length; i++){
         typeof objects[i]['checkHover'] !== 'undefined' && objects[i].checkHover();
     }
     if(hover.length >= 1) {
-        target = hover[hover.length - 1];
-        tMembers = getGroupMembers(target);
+        // Order them
+        let input = getGroupMembers(hover[hover.length - 1]);
         let indexes = [];
-        for(var i = 0; i < tMembers.length; i++){
-            indexes.push(objects.indexOf(tMembers[i]));
+        let result = [];
+        for(var i = 0; i < input.length; i++){
+            indexes.push(objects.indexOf(input[i]));
         }
-        for(var i = 0; i < tMembers.length; i++){
+        for(var i = 0; i < input.length; i++){
             let smallest = Math.min(...indexes);
             let item = indexes.indexOf(smallest);
-            tMembers[item].toFront();
+            result.push(input[item]);
             indexes[item] = Infinity;
+        }
+        // set and bring to front
+        tMembers = result;
+        for(var i = 0; i < tMembers.length; i++){
+            tMembers[i].toFront();
         }
     }
 
@@ -62,8 +73,8 @@ canvas.addEventListener('mousedown', e =>{
             x:mp[1][0],
             y:mp[1][1]
         };
-        // reposition target
-        if (target !== undefined){
+        // reposition targets
+        if (tMembers !== undefined){
             for(var i = 0; i < tMembers.length; i++){
                 tMembers[i].x += (mp[1][0] - mp[0][0]) / workspace.scale;
                 tMembers[i].y += (mp[1][1] - mp[0][1]) / workspace.scale;
@@ -77,7 +88,6 @@ canvas.addEventListener('mousedown', e =>{
     }
 
     function stop() {
-        target = undefined;
         tMembers = undefined;
         mouse = {};
         removeEventListener('mousemove',move);
@@ -91,8 +101,8 @@ canvas.addEventListener('wheel', e=>{
     const old = workspace.scale; 
     workspace.scale += dir * workspace.scale / 10;
     // bound scale
-    workspace.scale < 0.1 && (workspace.scale = 0.1);
-    workspace.scale > 7 && (workspace.scale = 7);
+    workspace.scale < settings.scrollOut && (workspace.scale = settings.scrollOut);
+    workspace.scale > settings.scrollIn && (workspace.scale = settings.scrollIn);
     // reposition workspace
     let pos = mouse.x === undefined ? getMouse(e).pk : {x:mouse.x,y:mouse.y};
     workspace.x -= (pos.x - workspace.x) / old * (workspace.scale - old);
@@ -101,7 +111,7 @@ canvas.addEventListener('wheel', e=>{
 });
 
 function getGroupMembers(obj){
-    return(allGroups[obj.mainGrp] || [target]);
+    return(allGroups[obj.mainGrp] || [obj]);
 }
 
 function canvasPos() {
@@ -123,15 +133,13 @@ function gPos (input){
 }
 
 var arcAngle = [0,2];
-const dftSettings = {
+const drawSettings = {
     lineWidth:3,
     color:'skyblue'
 };
 
 const temp = {};
-const groups = {};
-const allGroups = {};
-var gId = 0;
+
 
 // Classes
 temp.test = new rect(0,0,100,100).addCollider();
@@ -145,12 +153,12 @@ new curve([200,0],[400,100]);
 new arc(500,100,[50,90],'origin').color = 'red';
 new arc(500,100,[50,90],'origin').setArc(1.5);
 
-dftSettings.color = 'purple';
+drawSettings.color = 'purple';
 const r1 = new rect(50,250,100,100).addCollider();
 r1.color = 'red';
 const r2 = new rect(100,300,100,100).addCollider();
 r2.color = 'blue';
-const r3 = new rect(150,350,100,100).addCollider();
+const r3 = new rect(50,350,100,100).addCollider();
 
 group('test',r1,r2);
 group('test2',r2,r3);
@@ -160,13 +168,34 @@ var hover = [];
 function draw(){
     // setup
     context.clearRect(-workspace.x / workspace.scale,-workspace.y / workspace.scale,canvas.clientWidth / workspace.scale,canvas.clientHeight / workspace.scale);
+    hover = [];
     //draw objects
     for (var i = 0; i < objects.length; i++){
         objects[i].draw();
+        typeof objects[i]['checkHover'] !== 'undefined' && (objects[i].checkHover());
     }
-    if (typeof target !== 'undefined') {
-        for (var i = 0; i < tMembers.length; i++){
-            tMembers[i].outline();
-        }
+    document.documentElement.style.cursor = '';
+    if (hover.length > 0){
+        document.documentElement.style.cursor = 'grabbing';
     }
 }
+
+function ranInt(a,b) {
+    let min = Math.min(a,b);
+    let max = Math.max(a,b);
+    if (min == max){
+        return(min);
+    }
+    if (Array.from(arguments).indexOf(undefined) > 0) {
+        return(1 - Array.from(arguments).indexOf(undefined)); // only works if 2 arguments are provided
+    }
+    return(Math.round(Math.random() * (max - min) + min));
+}
+temp.ar = [];
+for(var a = 0; a < 100; a++) {
+    for(var b = 0; b < 100; b++) {
+        temp.ar.push(new rect(100 + 200 * b,a*200+ 1000,100,100).addCollider());
+        temp.ar.push(new rect(200 + 200 * b,a*200+ 1100,100,100).addCollider());
+    }
+}
+group('mega',...temp.ar);

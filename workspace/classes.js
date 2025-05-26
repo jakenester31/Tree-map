@@ -26,7 +26,6 @@ function group(name,...objs){
         for(var x = 0; x < mnGroups[i].length; x++){
             adding.push(mnGroups[i][x]);
         }
-        console.log(mnGroups[i]);
         delete allGroups[indexes[i]];
     }
 
@@ -42,45 +41,38 @@ function group(name,...objs){
 
 // Base Objects
 class rect {
-    constructor (x,y,width,height) {
+    constructor(x,y,width,height) {
         Object.assign(this,{x:x,y:y,width:width,height:height})
         this.hover = 0;
-        this.color = dftSettings.color;
+        this.color = drawSettings.color;
         objects.push(this);
     }
-    draw(){
+    draw() {
+        // camera culling
+        if (workspace.x + (this.x + this.width) * workspace.scale < 0 || workspace.y + (this.y + this.height) * workspace.scale < 0){
+            return(0);
+        }
+        if (workspace.x + (this.x) * workspace.scale > canvas.width || workspace.y + (this.y) * workspace.scale > canvas.height) {
+            return(0);
+        }
         setColor(this);
         context.fillRect(this.x,this.y,this.width,this.height);
     }
-    outline(){
-        let sz = Math.min(this.width,this.height) / 40;
-        context.lineWidth = sz * 2;
-        context.strokeStyle='lime';
-        context.beginPath();
-            context.moveTo(this.x + sz,this.y + sz);
-            context.lineTo(this.x + this.width - sz, this.y + sz);
-            context.lineTo(this.x + this.width - sz, this.y + this.height - sz);
-            context.lineTo(this.x + sz, this.y + this.height - sz);
-            context.lineTo(this.x + sz, this.y);
-            context.lineWidth > 0 && context.stroke();
-        context.closePath();
-    }
-    addCollider (){
+    addCollider() {
         this.collider = 1;
         return(this);
     }
-    toFront (){
+    toFront() {
         objects.splice(objects.indexOf(this),1);
         objects.push(this);
     }
-    checkHover (){
+    checkHover() {
         if (this.collider !== 1){
             return(0);
         }
 
         this.hover = 0;
         if (!(gPos(mouse.x).x > this.x && gPos(mouse.x).x < this.x + this.width)){
-            console.log('bad x');
             return(0);
         }
         if (gPos(mouse.y).y > this.y && gPos(mouse.y).y < this.y + this.height){
@@ -91,10 +83,10 @@ class rect {
 }
 
 class line {
-    constructor (x,y,x2,y2) {
+    constructor(x,y,x2,y2) {
         Object.assign(this,{x:x,y:y,x2:x2,y2:y2});
-        this.lineWidth = dftSettings.lineWidth;
-        this.color = dftSettings.color;
+        this.lineWidth = drawSettings.lineWidth;
+        this.color = drawSettings.color;
         objects.push(this);
     }
     draw(){
@@ -111,8 +103,8 @@ class line {
 class curve {
     constructor(point1,point2,controller1,controller2){
         Object.assign(this,{point1:point1,point2:point2,controller1:controller1,controller2:controller2});
-        this.lineWidth = dftSettings.lineWidth;
-        this.color = dftSettings.color;
+        this.lineWidth = drawSettings.lineWidth;
+        this.color = drawSettings.color;
         objects.push(this);
         if (controller1 == 'mid' || controller1 == undefined) {
             this.controller1 = [(point1[0] + point2[0]) / 2,point1[1]]
@@ -136,8 +128,8 @@ class curve {
 class arc {
     constructor(x,y,radius,fill){
         Object.assign(this,{x:x,y:y,fill:fill || 0})
-        this.lineWidth = dftSettings.lineWidth;
-        this.color = dftSettings.color;
+        this.lineWidth = drawSettings.lineWidth;
+        this.color = drawSettings.color;
         this.arcAngle = [0,2];
         this.radius = [radius,radius];
         if (typeof radius == 'object'){
